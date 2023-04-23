@@ -1,0 +1,46 @@
+:global {
+  body[data-theme="light"] {
+    --post-color: var(--white);
+    --post-text-color: var(--gray-300);
+    --link-color-hover: var(--gray-200);
+  }
+
+  body[data-theme="dark"] {
+    --post-color: var(--gray-300);
+    --post-text-color: var(--white);
+    --link-color-hover: var(--gray-100);
+  }
+}
+
+.post {
+  border: 2px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 20px 15px;
+  background-color: var(--post-color);
+  box-sizing: border-box;
+  margin-bottom: 30px;
+  transition: 0.4s;
+  color: var(--post-text-color);
+}
+
+.title {
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.description {
+  margin: 20px 0;
+  font-size: 18px;
+}
+
+a {
+  color: var(--post-text-color);
+  text-decoration: none;
+  margin-top: 5px;
+  font-weight: 600;
+  transition: 0.3s;
+
+  &:hover {
+    color: var(--link-color-hover);
+  }
+}
