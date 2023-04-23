@@ -1,5 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../app/store";
+import { URL_POSTS } from "../postList/postSlice";
+
+export const URL_COMMENTS: string =
+  "https://jsonplaceholder.typicode.com/comments";
 
 export type Comment = {
   postId: number;
@@ -13,23 +17,22 @@ export interface CommentState {
   list: Comment[];
   status: "idle" | "loading" | "failed";
   commentsCount: Record<number, number>;
-  error: string | undefined;
+  error: string | null;
 }
 
 const initialState: CommentState = {
   list: [],
   status: "idle",
   commentsCount: {},
-  error: "",
+  error: null,
 };
 
 export const getCommentById = createAsyncThunk(
-  "comments/fetchCommentById",
-  async (id: string) => {
-    const response = await fetch(
-      `https://jsonplaceholder.typicode.com/posts/${id}/comments`
-    );
-    if (!response.ok) throw new Error(`Cannot find ${id} id`);
+  "@@comments/fetchCommentById",
+  async (id: string, { rejectWithValue }) => {
+    const response = await fetch(`${URL_POSTS}/${id}/comments`);
+
+    if (!response.ok) return rejectWithValue(`Cannot find ${id} id`);
 
     const data: Comment[] = await response.json();
 
@@ -39,12 +42,10 @@ export const getCommentById = createAsyncThunk(
 
 export const getCommentsCount = createAsyncThunk(
   "comments/commentsCount",
-  async () => {
-    const response = await fetch(
-      "https://jsonplaceholder.typicode.com/comments"
-    );
+  async (_, { rejectWithValue }) => {
+    const response = await fetch(URL_COMMENTS);
 
-    if (!response.ok) throw new Error("Cannot find this resource");
+    if (!response.ok) return rejectWithValue("Cannot find this resource");
 
     const data: Comment[] = await response.json();
 
@@ -64,9 +65,6 @@ export const commentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getCommentById.pending, (state) => {
-        state.status = "loading";
-      })
       .addCase(getCommentById.fulfilled, (state, action) => {
         if (action.payload.length === 0) {
           state.status = "failed";
@@ -75,20 +73,24 @@ export const commentSlice = createSlice({
           state.list = action.payload;
         }
       })
-      .addCase(getCommentById.rejected, (state) => {
-        state.status = "failed";
-      })
-      .addCase(getCommentsCount.pending, (state) => {
-        state.status = "loading";
-      })
       .addCase(getCommentsCount.fulfilled, (state, action) => {
         state.status = "idle";
         state.commentsCount = action.payload;
       })
-      .addCase(getCommentsCount.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message;
-      });
+      .addMatcher(
+        (action) => action.type.endsWith("/pending"),
+        (state) => {
+          state.status = "loading";
+          state.error = null;
+        }
+      )
+      .addMatcher(
+        (action) => action.type.endsWith("/rejected"),
+        (state, action) => {
+          state.status = "failed";
+          state.error = action.payload as string;
+        }
+      );
   },
 });
 

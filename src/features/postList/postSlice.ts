@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../app/store";
 
+export const URL_POSTS: string = "https://jsonplaceholder.typicode.com/posts";
+
 export type Post = {
   userId: number;
   id: number;
@@ -11,24 +13,27 @@ export type Post = {
 export interface PostState {
   list: Post[];
   status: "idle" | "loading" | "failed";
-  error: string | undefined;
+  error: string | null;
 }
 
 const initialState: PostState = {
   list: [],
   status: "idle",
-  error: "",
+  error: null,
 };
 
-export const getAllPosts = createAsyncThunk("posts/fetchAllPosts", async () => {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+export const getAllPosts = createAsyncThunk(
+  "@@posts/fetchAllPosts",
+  async (_, { rejectWithValue }) => {
+    const response = await fetch(URL_POSTS);
 
-  if (!response.ok) throw new Error("Not found resources");
+    if (!response.ok) return rejectWithValue("Not found resources");
 
-  const data: Post[] = await response.json();
+    const data: Post[] = await response.json();
 
-  return data;
-});
+    return data;
+  }
+);
 
 export const postSlice = createSlice({
   name: "posts",
@@ -45,7 +50,7 @@ export const postSlice = createSlice({
       })
       .addCase(getAllPosts.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.payload as string;
       });
   },
 });

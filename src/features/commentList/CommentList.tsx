@@ -25,7 +25,7 @@ export const CommentList = (): JSX.Element => {
     id && dispatch(getCommentById(id));
   }, [dispatch, id]);
 
-  if (status === "failed") return <ErrorPage text={errorText} />;
+  if (status === "failed") return <ErrorPage text={errorText || "Oopps"} />;
 
   return (
     <>

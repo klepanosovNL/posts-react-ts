@@ -24,7 +24,8 @@ export const PostList = (): JSX.Element => {
     dispatch(getCommentsCount());
   }, [dispatch]);
 
-  if (statusPost === "failed") return <ErrorPage text={errorText} />;
+  if (statusPost === "failed")
+    return <ErrorPage text={errorText || "oopps.."} />;
 
   return (
     <div className={styles.posts}>
