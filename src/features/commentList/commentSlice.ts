@@ -42,7 +42,7 @@ export const getCommentById = createAsyncThunk(
 
 export const getCommentsCount = createAsyncThunk(
   "@@comments/commentsCount",
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue }) => {
     const response = await fetch(URL_COMMENTS);
 
     if (!response.ok) return rejectWithValue("Cannot find this resource");
