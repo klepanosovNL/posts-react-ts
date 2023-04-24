@@ -1,16 +1,15 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
 
+import { Comment as CommentType, getCommentById } from "./commentSlice";
+import { Comment } from "../../components/comment/Comment";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
-  Comment as CommentType,
-  getCommentById,
   selectComments,
   selectCommentsError,
   selectCommentsStatus,
-} from "./commentSlice";
-import { Comment } from "../../components/comment/Comment";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-
+} from "./commentsSelectors";
+import { ApiStep } from "../../app/types";
 import { ErrorPage } from "../../pages/errorPage/ErrorPage";
 
 import styles from "./Comments.module.scss";
@@ -25,7 +24,8 @@ export const CommentList = (): JSX.Element => {
     id && dispatch(getCommentById(id));
   }, [dispatch, id]);
 
-  if (status === "failed") return <ErrorPage text={errorText || "Oopps"} />;
+  if (status === ApiStep.failed)
+    return <ErrorPage text={errorText || "Oopps"} />;
 
   return (
     <>

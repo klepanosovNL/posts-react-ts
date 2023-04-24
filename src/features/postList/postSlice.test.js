@@ -1,6 +1,8 @@
 import configureStore from "redux-mock-store";
 import thunk from "redux-thunk";
-import { getAllPosts, selectPosts } from "./postSlice";
+import { getAllPosts } from "./postSlice";
+import { selectPosts } from "./postSelectors";
+import { getCommentsCount } from "../commentList/commentSlice";
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -11,9 +13,16 @@ describe("postSlice", () => {
     await store.dispatch(getAllPosts());
 
     const actions = store.getActions();
-    expect(actions[0].type).toEqual(getAllPosts.pending.type);
-    expect(actions[1].type).toEqual(getAllPosts.fulfilled.type);
-    expect(actions[1].payload).toHaveLength(100);
+
+    await Promise.all([
+      store.dispatch(getAllPosts.pending),
+      store.dispatch(getCommentsCount.pending),
+    ]);
+
+    expect(actions[0].meta.requestStatus).toEqual("pending");
+    expect(actions[1].meta.requestStatus).toEqual("pending");
+    expect(actions[2].type).toEqual(getAllPosts.fulfilled.type);
+    expect(actions[2].payload).toHaveLength(100);
   });
 
   it("should fetch posts failure", async () => {
@@ -23,7 +32,7 @@ describe("postSlice", () => {
 
     const actions = store.getActions();
     expect(actions[0].type).toEqual(getAllPosts.pending.type);
-    expect(actions[1].type).toEqual(getAllPosts.fulfilled.type);
+    expect(actions[2].type).toEqual(getAllPosts.fulfilled.type);
   });
 
   it("should select posts from the store", () => {

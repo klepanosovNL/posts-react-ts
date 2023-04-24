@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../app/store";
 import { URL_POSTS } from "../postList/postSlice";
+import { ApiStep } from "../../app/types";
 
 export const URL_COMMENTS: string =
   "https://jsonplaceholder.typicode.com/comments";
@@ -15,14 +15,14 @@ export type Comment = {
 
 export interface CommentState {
   list: Comment[];
-  status: "idle" | "loading" | "failed";
+  status: ApiStep;
   commentsCount: Record<number, number>;
   error: string | null;
 }
 
 const initialState: CommentState = {
   list: [],
-  status: "idle",
+  status: ApiStep.idle,
   commentsCount: {},
   error: null,
 };
@@ -41,8 +41,8 @@ export const getCommentById = createAsyncThunk(
 );
 
 export const getCommentsCount = createAsyncThunk(
-  "comments/commentsCount",
-  async (_, { rejectWithValue }) => {
+  "@@comments/commentsCount",
+  async (_, { rejectWithValue, getState }) => {
     const response = await fetch(URL_COMMENTS);
 
     if (!response.ok) return rejectWithValue("Cannot find this resource");
@@ -67,36 +67,31 @@ export const commentSlice = createSlice({
     builder
       .addCase(getCommentById.fulfilled, (state, action) => {
         if (action.payload.length === 0) {
-          state.status = "failed";
+          state.status = ApiStep.failed;
         } else {
-          state.status = "idle";
+          state.status = ApiStep.idle;
           state.list = action.payload;
         }
       })
       .addCase(getCommentsCount.fulfilled, (state, action) => {
-        state.status = "idle";
-        state.commentsCount = action.payload;
+        state.status = ApiStep.idle;
+        state.commentsCount = action.payload || {};
       })
       .addMatcher(
         (action) => action.type.endsWith("/pending"),
         (state) => {
-          state.status = "loading";
+          state.status = ApiStep.loading;
           state.error = null;
         }
       )
       .addMatcher(
         (action) => action.type.endsWith("/rejected"),
         (state, action) => {
-          state.status = "failed";
+          state.status = ApiStep.failed;
           state.error = action.payload as string;
         }
       );
   },
 });
 
-export const selectComments = (state: RootState) => state.comments.list;
-export const selectCommentsError = (state: RootState) => state.comments.error;
-export const selectCommentsStatus = (state: RootState) => state.comments.status;
-export const selectCommentsCount = (state: RootState) =>
-  state.comments.commentsCount;
 export default commentSlice.reducer;

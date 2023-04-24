@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useAppSelector } from "../../app/hooks";
-import { selectCommentsCount } from "../../features/commentList/commentSlice";
+import { selectCommentsCount } from "../../features/commentList/commentsSelectors";
 
 import styles from "./Post.module.scss";
 

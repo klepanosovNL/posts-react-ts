@@ -1,12 +1,11 @@
 import configureStore from "redux-mock-store";
 import thunk from "redux-thunk";
+import { getCommentById, getCommentsCount } from "./commentSlice";
 import {
-  getCommentById,
-  getCommentsCount,
   selectComments,
   selectCommentsCount,
   selectCommentsStatus,
-} from "./commentSlice";
+} from "./commentsSelectors";
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);

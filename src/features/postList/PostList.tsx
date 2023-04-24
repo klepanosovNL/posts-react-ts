@@ -2,29 +2,28 @@ import { useEffect } from "react";
 
 import { Post } from "../../components/post/Post";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { getAllPosts } from "./postSlice";
+import { ErrorPage } from "../../pages/errorPage/ErrorPage";
 import {
-  getAllPosts,
   selectPostError,
   selectPosts,
-  selectStatus,
-} from "./postSlice";
-import { getCommentsCount } from "../commentList/commentSlice";
+  selectPostStatus,
+} from "./postSelectors";
+import { ApiStep } from "../../app/types";
 
 import styles from "./PostList.module.scss";
-import { ErrorPage } from "../../pages/errorPage/ErrorPage";
 
 export const PostList = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const posts = useAppSelector(selectPosts);
-  const statusPost = useAppSelector(selectStatus);
+  const statusPost = useAppSelector(selectPostStatus);
   const errorText = useAppSelector(selectPostError);
 
   useEffect(() => {
     dispatch(getAllPosts());
-    dispatch(getCommentsCount());
   }, [dispatch]);
 
-  if (statusPost === "failed")
+  if (statusPost === ApiStep.failed)
     return <ErrorPage text={errorText || "oopps.."} />;
 
   return (

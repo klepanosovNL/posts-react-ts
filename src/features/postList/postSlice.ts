@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../app/store";
+import { ApiStep } from "../../app/types";
+import { getCommentsCount } from "../commentList/commentSlice";
 
 export const URL_POSTS: string = "https://jsonplaceholder.typicode.com/posts";
 
@@ -12,24 +13,26 @@ export type Post = {
 
 export interface PostState {
   list: Post[];
-  status: "idle" | "loading" | "failed";
+  status: ApiStep;
   error: string | null;
 }
 
 const initialState: PostState = {
   list: [],
-  status: "idle",
+  status: ApiStep.idle,
   error: null,
 };
 
 export const getAllPosts = createAsyncThunk(
   "@@posts/fetchAllPosts",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     const response = await fetch(URL_POSTS);
 
     if (!response.ok) return rejectWithValue("Not found resources");
 
     const data: Post[] = await response.json();
+
+    dispatch(getCommentsCount());
 
     return data;
   }
@@ -42,20 +45,17 @@ export const postSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getAllPosts.pending, (state) => {
-        state.status = "loading";
+        state.status = ApiStep.loading;
       })
       .addCase(getAllPosts.fulfilled, (state, action) => {
-        state.status = "idle";
+        state.status = ApiStep.idle;
         state.list = action.payload;
       })
       .addCase(getAllPosts.rejected, (state, action) => {
-        state.status = "failed";
+        state.status = ApiStep.failed;
         state.error = action.payload as string;
       });
   },
 });
 
-export const selectPosts = (state: RootState) => state.posts.list;
-export const selectStatus = (state: RootState) => state.posts.status;
-export const selectPostError = (state: RootState) => state.posts.error;
 export default postSlice.reducer;
